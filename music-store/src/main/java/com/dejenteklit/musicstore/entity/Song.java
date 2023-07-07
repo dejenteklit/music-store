@@ -1,33 +1,40 @@
 package com.dejenteklit.musicstore.entity;
-
-import jakarta.persistence.*;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "songs")
 public class Song {
+    public Song(Long id, String title, String artist, String albumArt, String fileName) {
+        this.id = id;
+        this.title = title;
+        this.artist = artist;
+        this.albumArt = albumArt;
+        this.fileName = fileName;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank
     @Column(nullable = false)
     private String title;
 
+    @NotBlank
     @Column(nullable = false)
     private String artist;
 
     @Column(name = "album_art")
     private String albumArt;
 
-
+    @NotBlank
     @Size(min = 1, max = 255)
     @Column(name = "file_name")
     private String fileName;
 
     public Song() {
-
     }
 
     public Song(String title, String artist, String albumArt, String fileName) {
@@ -36,8 +43,6 @@ public class Song {
         this.albumArt = albumArt;
         this.fileName = fileName;
     }
-
-    // Getters and setters
 
     public Long getId() {
         return id;
@@ -77,5 +82,10 @@ public class Song {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    // Custom method to populate sample data
+    public static Song createSampleSong() {
+        return new Song("Sample Song", "Sample Artist", "album-art.jpg", "sample-song.mp3");
     }
 }

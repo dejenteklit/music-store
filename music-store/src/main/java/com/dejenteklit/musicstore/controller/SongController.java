@@ -2,22 +2,25 @@ package com.dejenteklit.musicstore.controller;
 
 import com.dejenteklit.musicstore.entity.Song;
 import com.dejenteklit.musicstore.service.SongService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.Valid;
 
 @Controller
-//@RequestMapping("/songs")
+@RequestMapping("/songs")
 public class SongController {
 
-    private SongService songService;
+    private final SongService songService;
+
     public SongController(SongService songService) {
-        super();
         this.songService = songService;
     }
 
-    @GetMapping("/songs")
+    @GetMapping("list")
     public String listSongs(Model model) {
         model.addAttribute("songs", songService.getAllSongs());
         return "songs";
@@ -30,31 +33,19 @@ public class SongController {
         return "upload";
     }
 
-    @PostMapping("/songs")
-    public String saveSong(@ModelAttribute("song") Song song) {
-        songService.saveSong(song);
-        return "redirect:/songs";
+    @PostMapping("/upload")
+    public String saveSong(@ModelAttribute("song") @Valid Song song, BindingResult bindingResult,
+                           @RequestParam("audioFile") MultipartFile audioFile,
+                           @RequestParam("albumArtFile") MultipartFile albumArtFile, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "upload";
+        }
+
+        Song savedSong = songService.saveSong(song, audioFile, albumArtFile);
+
+        // Add the saved song to the model attributes
+        model.addAttribute("newSong", savedSong);
+
+        return "redirect:/songs/list"; // Redirect to the songs list page
     }
-
-   /* @GetMapping("/edit/{id}")
-    public String editSongForm(@PathVariable Long id, Model model) {
-        model.addAttribute("song", songService.getSongById(id));
-        return "edit_song";
-    }*/
-
-    @PostMapping("/{id}")
-    public String updateSong(@PathVariable Long id, @ModelAttribute("song") Song song) {
-        Song existingSong = songService.getSongById(id);
-        existingSong.setTitle(song.getTitle());
-        existingSong.setArtist(song.getArtist());
-        existingSong.setAlbumArt(song.getAlbumArt());
-        songService.updateSong(existingSong);
-        return "redirect:/songs";
-    }
-
-   /* @GetMapping("/{id}")
-    public String deleteSong(@PathVariable Long id) {
-        songService.deleteSongById(id);
-        return "redirect:/songs";
-    }*/
 }
